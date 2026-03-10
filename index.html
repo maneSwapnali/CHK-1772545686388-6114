@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShieldNet — AI Digital Safety Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM — Cyber Noir / Command-Line Brutalism
+   ═══════════════════════════════════════════════ */
+:root {
+  --bg: #080c10;
+  --bg2: #0d1117;
+  --bg3: #111820;
+  --border: #1e2d3d;
+  --border2: #243447;
+  --accent: #00d4ff;
+  --accent2: #0099cc;
+  --green: #00ff88;
+  --red: #ff3355;
+  --orange: #ff8c00;
+  --yellow: #ffcc00;
+  --text: #c9d1d9;
+  --text2: #8b949e;
+  --text3: #4d5566;
+  --panel: #0d1520;
+  --glow: 0 0 20px rgba(0,212,255,0.15);
+  --font-head: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ─── NAVBAR ─── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(8,12,16,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-logo {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: logoSpin 8s linear infinite;
+}
+
+@keyframes logoSpin {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--accent)); }
+  50% { filter: drop-shadow(0 0 16px var(--green)); }
+}
+
+.nav-brand span {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.nav-brand span em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nav-link:hover, .nav-link.active { color: var(--accent); background: rgba(0,212,255,0.08); }
+
+.nav-auth {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-sm {
+  padding: 6px 16px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary { background: var(--accent); color: var(--bg); }
+.btn-primary:hover { background: var(--green); box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+
+/* ─── PAGES ─── */
+.page { display: none; min-height: calc(100vh - 60px); }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── HOME PAGE ─── */
+.hero {
+  position: relative;
+  padding: 80px 2rem 60px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--accent);
+  padding: 6px 16px;
+  border-radius: 2px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.hero-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  letter-spacing: -2px;
+}
+.hero h1 .accent { color: var(--accent); }
+.hero h1 .green { color: var(--green); }
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--text2);
+  max-width: 540px;
+  margin: 0 auto 48px;
+  line-height: 1.8;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+
+.btn-lg {
+  padding: 12px 28px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-lg.primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+.btn-lg.primary:hover { background: var(--green); box-shadow: 0 0 30px rgba(0,255,136,0.5); transform: translateY(-1px); }
+.btn-lg.secondary { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+.btn-lg.secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  max-width: 700px;
+  margin: 0 auto 64px;
+  overflow: hidden;
+}
+
+.stat-item {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+
+.stat-num {
+  font-family: var(--font-head);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+  display: block;
+}
+.stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* Feature cards */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  max-width: 1100px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+}
+
+.feature-card {
+  background: var(--bg2);
+  padding: 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.feature-card:hover::before { transform: scaleX(1); }
+.feature-card:hover { background: var(--bg3); }
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  display: block;
+}
+.feature-card h3 { font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.feature-card p { font-size: 12px; color: var(--text2); line-height: 1.8; }
+.feature-tag {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 10px;
+  color: var(--accent);
+  border: 1px solid rgba(0,212,255,0.3);
+  padding: 3px 10px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── CONTENT SECTION ─── */
+.section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 2rem;
+}
+.section-sm { max-width: 700px; }
+.section-wide { max-width: 1200px; }
+
+.page-header {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.page-header .label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.page-header h2 {
+  font-family: var(--font-head);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.page-header p { color: var(--text2); margin-top: 8px; font-size: 13px; }
+
+/* ─── PANELS / CARDS ─── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.panel-title {
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* ─── FORM ELEMENTS ─── */
+.form-group { margin-bottom: 20px; }
+label {
+  display: block;
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+input[type="text"], input[type="email"], input[type="password"],
+input[type="url"], textarea, select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.08);
+}
+textarea { resize: vertical; min-height: 120px; }
+select option { background: var(--bg2); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.btn-accent { background: var(--accent); color: var(--bg); }
+.btn-accent:hover { background: var(--green); box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { opacity: 0.85; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── RESULT DISPLAY ─── */
+.result-box {
+  display: none;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 24px;
+  animation: fadeIn 0.4s ease;
+}
+.result-box.show { display: block; }
+
+.result-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.result-header.safe { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); }
+.result-header.warning { background: rgba(255,204,0,0.08); border: 1px solid rgba(255,204,0,0.3); }
+.result-header.caution { background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.3); }
+.result-header.danger { background: rgba(255,51,85,0.08); border: 1px solid rgba(255,51,85,0.3); }
+
+.result-verdict {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.safe .result-verdict { color: var(--green); }
+.warning .result-verdict { color: var(--yellow); }
+.caution .result-verdict { color: var(--orange); }
+.danger .result-verdict { color: var(--red); }
+
+.result-badge {
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.safe .result-badge { background: rgba(0,255,136,0.15); color: var(--green); }
+.warning .result-badge { background: rgba(255,204,0,0.15); color: var(--yellow); }
+.caution .result-badge { background: rgba(255,140,0,0.15); color: var(--orange); }
+.danger .result-badge { background: rgba(255,51,85,0.15); color: var(--red); }
+
+/* Risk meter */
+.risk-meter {
+  padding: 20px 24px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.risk-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.risk-bar { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.risk-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+.risk-fill.safe { background: var(--green); }
+.risk-fill.warning { background: var(--yellow); }
+.risk-fill.caution { background: var(--orange); }
+.risk-fill.danger { background: var(--red); box-shadow: 0 0 10px rgba(255,51,85,0.5); }
+
+.result-details {
+  padding: 20px 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-key { color: var(--text2); }
+.detail-val { color: var(--text); font-weight: 700; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 2px;
+  background: rgba(255,51,85,0.1);
+  color: var(--red);
+  border: 1px solid rgba(255,51,85,0.2);
+}
+
+/* ─── ALERT / MESSAGES ─── */
+.alert {
+  padding: 12px 16px;
+  border-radius: 3px;
+  font-size: 12px;
+  margin-bottom: 16px;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.alert.show { display: block; }
+.alert-error { background: rgba(255,51,85,0.08); border: 1px solid rgba(255,51,85,0.3); color: var(--red); }
+.alert-success { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+.alert-info { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.3); color: var(--accent); }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  width: 100%;
+  max-width: 440px;
+  margin: 1rem;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h3 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; color: #fff; }
+.modal-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.2rem; line-height: 1; }
+.modal-close:hover { color: var(--red); }
+.modal-body { padding: 24px 28px; }
+.modal-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.modal-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  color: var(--text3);
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  transition: all 0.2s;
+}
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ─── AUTH DISPLAY ─── */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.user-chip .dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: blink 2s infinite;
+}
+
+/* ─── CYBER TIPS ─── */
+.tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+.tip-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.tip-card:hover { border-color: var(--border2); }
+.tip-card .tip-num {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-family: var(--font-head);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--border);
+  line-height: 1;
+}
+.tip-icon { font-size: 1.5rem; margin-bottom: 12px; }
+.tip-card h4 { font-family: var(--font-head); font-size: 0.95rem; color: #fff; margin-bottom: 8px; }
+.tip-card p { font-size: 12px; color: var(--text2); line-height: 1.8; }
+.tip-severity {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+.tip-severity.critical { background: rgba(255,51,85,0.1); color: var(--red); }
+.tip-severity.important { background: rgba(255,140,0,0.1); color: var(--orange); }
+.tip-severity.essential { background: rgba(0,212,255,0.1); color: var(--accent); }
+
+/* ─── ADMIN DASHBOARD ─── */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+@media (max-width: 700px) { .admin-grid { grid-template-columns: 1fr 1fr; } }
+
+.stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 4px;
+}
+.stat-card .val {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.stat-card .lbl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ─── TABLE ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.data-table th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.data-table .truncate { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-safe { background: rgba(0,255,136,0.1); color: var(--green); }
+.badge-warn { background: rgba(255,204,0,0.1); color: var(--yellow); }
+.badge-danger { background: rgba(255,51,85,0.1); color: var(--red); }
+.badge-pending { background: rgba(0,212,255,0.1); color: var(--accent); }
+.badge-reviewed { background: rgba(139,148,158,0.1); color: var(--text2); }
+.badge-admin { background: rgba(255,140,0,0.15); color: var(--orange); border: 1px solid rgba(255,140,0,0.3); }
+.badge-user { background: rgba(0,212,255,0.08); color: var(--text2); }
+
+/* ─── LOADING ─── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(0,212,255,0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── REPORT FORM ─── */
+.report-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.report-type-btn {
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.report-type-btn:hover, .report-type-btn.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,212,255,0.05);
+}
+.report-type-btn .rt-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+
+/* ─── TABS ─── */
+.admin-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.admin-tab {
+  padding: 10px 20px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  color: var(--text3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.admin-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 2rem;
+  text-align: center;
+  color: var(--text3);
+  font-size: 11px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: 2rem; }
+  .stats-bar { flex-direction: column; gap: 0; }
+  .features-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="navbar">
+  <div class="nav-brand" onclick="showPage('home')">
+    <div class="nav-logo"></div>
+    <span>Shield<em>Net</em></span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('home')">Home</button>
+    <button class="nav-link" onclick="showPage('url-checker')">URL Check</button>
+    <button class="nav-link" onclick="showPage('scam-detector')">Scam Detect</button>
+    <button class="nav-link" onclick="showPage('report')">Report</button>
+    <button class="nav-link" onclick="showPage('learn')">Learn</button>
+    <button class="nav-link" id="adminNavBtn" onclick="showPage('admin')" style="display:none">Admin</button>
+  </div>
+  <div class="nav-auth" id="navAuth">
+    <button class="btn-sm btn-outline" onclick="openModal('login')">Log In</button>
+    <button class="btn-sm btn-primary" onclick="openModal('register')">Sign Up</button>
+  </div>
+  <div class="nav-auth" id="navUser" style="display:none">
+    <div class="user-chip"><span class="dot"></span><span id="navUsername"></span></div>
+    <button class="btn-sm btn-outline" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-badge">🛡️ AI-Powered Protection System — Active</div>
+    <h1>Your <span class="accent">Digital</span> Safety<br><span class="green">Command Center</span></h1>
+    <p class="hero-sub">Advanced AI analysis to detect scams, phishing attacks, and malicious URLs before they reach you. Protect yourself and your community.</p>
+    <div class="hero-cta">
+      <button class="btn-lg primary" onclick="showPage('url-checker')">⚡ Check a URL</button>
+      <button class="btn-lg secondary" onclick="showPage('scam-detector')">🔍 Analyze Message</button>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item"><span class="stat-num">99.2%</span><span class="stat-label">Detection Rate</span></div>
+      <div class="stat-item"><span class="stat-num">2.4K+</span><span class="stat-label">Threats Blocked</span></div>
+      <div class="stat-item"><span class="stat-num">5</span><span class="stat-label">Protection Layers</span></div>
+      <div class="stat-item"><span class="stat-num">24/7</span><span class="stat-label">Always Active</span></div>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card" onclick="showPage('url-checker')">
+        <span class="feature-icon">🔗</span>
+        <h3>URL Safety Scanner</h3>
+        <p>Paste any link and get instant analysis. Detects malicious patterns, fake domains, and suspicious redirects.</p>
+        <span class="feature-tag">Try It →</span>
+      </div>
+      <div class="feature-card" onclick="showPage('scam-detector')">
+        <span class="feature-icon">📧</span>
+        <h3>Message Scam Detector</h3>
+        <p>AI-powered text analysis identifies phishing language, urgency manipulation, and financial fraud patterns.</p>
+        <span class="feature-tag">Analyze →</span>
+      </div>
+      <div class="feature-card" onclick="showPage('report')">
+        <span class="feature-icon">🚨</span>
+        <h3>Community Reports</h3>
+        <p>Submit suspicious content to our database. Help protect others by reporting threats you encounter.</p>
+        <span class="feature-tag">Report →</span>
+      </div>
+      <div class="feature-card" onclick="showPage('learn')">
+        <span class="feature-icon">🎓</span>
+        <h3>Cyber Safety Academy</h3>
+        <p>Learn essential strategies to protect yourself from social engineering, identity theft, and online fraud.</p>
+        <span class="feature-tag">Learn →</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ URL CHECKER ══════════════ -->
+<div class="page" id="page-url-checker">
+  <div class="section section-sm">
+    <div class="page-header">
+      <div class="label">// Tool_01</div>
+      <h2>URL Safety Scanner</h2>
+      <p>Enter any URL to check for malicious patterns, suspicious redirects, and phishing indicators.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Enter URL to Analyze</div>
+      <div class="form-group">
+        <label>Target URL</label>
+        <input type="text" id="urlInput" placeholder="https://example.com or paste any link..." autocomplete="off">
+      </div>
+      <div class="alert alert-error" id="urlAlert"></div>
+      <button class="btn btn-accent" onclick="checkURL()" id="urlBtn">
+        <span id="urlBtnText">⚡ Scan URL</span>
+      </button>
+
+      <div class="result-box" id="urlResult">
+        <div class="result-header" id="urlResultHeader">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;">Analysis Result</div>
+            <div class="result-verdict" id="urlVerdict"></div>
+          </div>
+          <div class="result-badge" id="urlBadge"></div>
+        </div>
+        <div class="risk-meter">
+          <div class="risk-label">Risk Score: <span id="urlScore">0</span>/100</div>
+          <div class="risk-bar"><div class="risk-fill" id="urlRiskFill" style="width:0%"></div></div>
+        </div>
+        <div class="result-details">
+          <div id="urlDetails"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">How URL Scanning Works</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2">
+        <div>▸ Checks for known suspicious patterns and IP-based URLs</div>
+        <div>▸ Detects typosquatting (e.g., paypa1.com, amaz0n.net)</div>
+        <div>▸ Identifies dangerous file extensions and downloads</div>
+        <div>▸ Verifies HTTPS encryption and URL length anomalies</div>
+        <div>▸ Cross-references known safe and malicious domain lists</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCAM DETECTOR ══════════════ -->
+<div class="page" id="page-scam-detector">
+  <div class="section section-sm">
+    <div class="page-header">
+      <div class="label">// Tool_02</div>
+      <h2>Message & Email Scam Detector</h2>
+      <p>Paste suspicious text messages, emails, or any communication to detect phishing and fraud patterns.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Paste Message for Analysis</div>
+      <div class="form-group">
+        <label>Message / Email Content</label>
+        <textarea id="messageInput" placeholder="Paste the full text of the message or email here...
+&#10;Example: Dear Customer, Your account will be suspended unless you verify your details immediately. Click here..." style="min-height:160px"></textarea>
+      </div>
+      <div class="alert alert-error" id="msgAlert"></div>
+      <button class="btn btn-accent" onclick="checkMessage()" id="msgBtn">
+        <span id="msgBtnText">🔍 Analyze Message</span>
+      </button>
+
+      <div class="result-box" id="msgResult">
+        <div class="result-header" id="msgResultHeader">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;">Analysis Result</div>
+            <div class="result-verdict" id="msgVerdict"></div>
+          </div>
+          <div class="result-badge" id="msgBadge"></div>
+        </div>
+        <div class="risk-meter">
+          <div class="risk-label">Risk Score: <span id="msgScore">0</span>/100</div>
+          <div class="risk-bar"><div class="risk-fill" id="msgRiskFill" style="width:0%"></div></div>
+        </div>
+        <div class="result-details" id="msgDetails"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Common Scam Tactics Detected</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:var(--text2)">
+        <div><span style="color:var(--red)">⬛ CRITICAL</span><br>Account suspension threats<br>Banking credential requests<br>Wire transfer demands</div>
+        <div><span style="color:var(--orange)">🔶 HIGH</span><br>Prize/lottery announcements<br>Urgency manipulation<br>Identity verification scams</div>
+        <div><span style="color:var(--yellow)">🔸 MEDIUM</span><br>Work-from-home schemes<br>Investment opportunities<br>Suspicious links in text</div>
+        <div><span style="color:var(--accent)">🔹 LOW</span><br>Generic promotional language<br>Vague reward promises<br>Unsolicited offers</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ REPORT PAGE ══════════════ -->
+<div class="page" id="page-report">
+  <div class="section section-sm">
+    <div class="page-header">
+      <div class="label">// Report_System</div>
+      <h2>Submit a Scam Report</h2>
+      <p>Help protect others by reporting suspicious links, messages, or online fraud you've encountered.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Select Report Type</div>
+      <div class="report-type-grid">
+        <button class="report-type-btn selected" data-type="url" onclick="selectReportType(this,'url')">
+          <span class="rt-icon">🔗</span>
+          Suspicious URL
+        </button>
+        <button class="report-type-btn" data-type="message" onclick="selectReportType(this,'message')">
+          <span class="rt-icon">💬</span>
+          Scam Message
+        </button>
+        <button class="report-type-btn" data-type="email" onclick="selectReportType(this,'email')">
+          <span class="rt-icon">📧</span>
+          Phishing Email
+        </button>
+        <button class="report-type-btn" data-type="other" onclick="selectReportType(this,'other')">
+          <span class="rt-icon">🚨</span>
+          Other Threat
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Report Details</div>
+      <div class="form-group">
+        <label>Suspicious Content (URL or Message)</label>
+        <textarea id="reportContent" placeholder="Paste the suspicious URL, message, email, or content here..." style="min-height:100px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Risk Assessment</label>
+        <select id="reportRisk">
+          <option value="low">🟡 Low Risk — Minor Concern</option>
+          <option value="medium">🟠 Medium Risk — Suspicious</option>
+          <option value="high" selected>🔴 High Risk — Dangerous</option>
+          <option value="critical">⛔ Critical — Active Threat</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Additional Context (Optional)</label>
+        <textarea id="reportDesc" placeholder="How did you receive this? What happened? Any other details that might help..." style="min-height:80px"></textarea>
+      </div>
+      <div class="alert" id="reportAlert"></div>
+      <button class="btn btn-danger" onclick="submitReport()">🚨 Submit Report</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Why Your Reports Matter</div>
+      <div style="font-size:12px;color:var(--text2);line-height:2">
+        <div>▸ Reports are reviewed by our admin team within 24 hours</div>
+        <div>▸ Confirmed threats are added to our detection database</div>
+        <div>▸ Community reports improve AI detection accuracy</div>
+        <div>▸ Your identity is never attached to public threat databases</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LEARN PAGE ══════════════ -->
+<div class="page" id="page-learn">
+  <div class="section">
+    <div class="page-header">
+      <div class="label">// Cyber_Academy</div>
+      <h2>Digital Safety Learning Center</h2>
+      <p>Essential knowledge to protect yourself from modern cyber threats and online fraud.</p>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <span class="tip-num">01</span>
+        <div class="tip-icon">🔐</div>
+        <h4>Use Strong, Unique Passwords</h4>
+        <p>Never reuse passwords across sites. Use a password manager to generate 16+ character passwords with mixed characters. Enable two-factor authentication on every account.</p>
+        <span class="tip-severity critical">Critical</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">02</span>
+        <div class="tip-icon">🕵️</div>
+        <h4>Verify Sender Identity</h4>
+        <p>Hover over links before clicking. Check the actual email address, not just the display name. Legitimate organizations never ask for passwords via email.</p>
+        <span class="tip-severity critical">Critical</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">03</span>
+        <div class="tip-icon">⏰</div>
+        <h4>Beware of Urgency Tactics</h4>
+        <p>Scammers create false urgency: "Act now!", "Your account will be closed in 24 hours!" Legitimate companies give you time. When in doubt, contact the company directly.</p>
+        <span class="tip-severity critical">Critical</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">04</span>
+        <div class="tip-icon">🔒</div>
+        <h4>Always Check for HTTPS</h4>
+        <p>Before entering any personal information, ensure the site uses HTTPS (padlock icon). However, HTTPS alone doesn't guarantee a site is safe — phishers use it too.</p>
+        <span class="tip-severity important">Important</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">05</span>
+        <div class="tip-icon">💳</div>
+        <h4>Protect Financial Information</h4>
+        <p>Never share card numbers, PINs, CVVs, or banking credentials over phone or email. Banks never ask for your full password. Use virtual cards for online shopping.</p>
+        <span class="tip-severity critical">Critical</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">06</span>
+        <div class="tip-icon">🌐</div>
+        <h4>Spot Fake Websites</h4>
+        <p>Look for subtle misspellings: paypa1.com, amaz0n.net, g00gle.com. Check the full domain name carefully. Use URL scanners before entering sensitive data.</p>
+        <span class="tip-severity important">Important</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">07</span>
+        <div class="tip-icon">📱</div>
+        <h4>Beware of SMS Phishing (Smishing)</h4>
+        <p>Fake delivery notifications, bank alerts, and prize messages via SMS are common. Never click links in unexpected text messages. Navigate to sites directly.</p>
+        <span class="tip-severity important">Important</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">08</span>
+        <div class="tip-icon">🔄</div>
+        <h4>Keep Software Updated</h4>
+        <p>Updates patch security vulnerabilities. Enable automatic updates for your OS, browser, and apps. Outdated software is a primary entry point for malware attacks.</p>
+        <span class="tip-severity essential">Essential</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">09</span>
+        <div class="tip-icon">🎣</div>
+        <h4>Recognize Spear Phishing</h4>
+        <p>Targeted attacks use your name, company, or recent activity to appear legitimate. Be skeptical of any unsolicited communication, even if it contains accurate details about you.</p>
+        <span class="tip-severity critical">Critical</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">10</span>
+        <div class="tip-icon">👥</div>
+        <h4>Protect Your Social Media</h4>
+        <p>Oversharing on social media helps criminals craft convincing scams. Review privacy settings, limit personal information publicly visible, and be cautious about friend requests from strangers.</p>
+        <span class="tip-severity essential">Essential</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">11</span>
+        <div class="tip-icon">📊</div>
+        <h4>Monitor Your Accounts</h4>
+        <p>Regularly review bank statements and credit reports. Set up transaction alerts. Early detection of unauthorized activity minimizes damage from identity theft.</p>
+        <span class="tip-severity essential">Essential</span>
+      </div>
+      <div class="tip-card">
+        <span class="tip-num">12</span>
+        <div class="tip-icon">🛡️</div>
+        <h4>Report What You Find</h4>
+        <p>Reporting scams helps protect others. Use our Report page to submit threats, or contact national cybercrime reporting agencies in your country. Every report matters.</p>
+        <span class="tip-severity essential">Essential</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN DASHBOARD ══════════════ -->
+<div class="page" id="page-admin">
+  <div class="section section-wide">
+    <div class="page-header">
+      <div class="label">// Admin_Console</div>
+      <h2>Admin Dashboard</h2>
+      <p>System overview, user management, and threat report management.</p>
+    </div>
+
+    <div class="admin-grid" id="adminStats">
+      <div class="stat-card"><div class="val" id="statUsers">—</div><div class="lbl">Registered Users</div></div>
+      <div class="stat-card"><div class="val" id="statReports">—</div><div class="lbl">Total Reports</div></div>
+      <div class="stat-card"><div class="val" id="statPending" style="color:var(--orange)">—</div><div class="lbl">Pending Review</div></div>
+      <div class="stat-card"><div class="val" id="statURLs">—</div><div class="lbl">URLs Scanned</div></div>
+      <div class="stat-card"><div class="val" id="statMsgs">—</div><div class="lbl">Messages Analyzed</div></div>
+      <div class="stat-card"><div class="val" id="statDanger" style="color:var(--red)">—</div><div class="lbl">Dangerous URLs Found</div></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('reports')">Scam Reports</button>
+      <button class="admin-tab" onclick="switchAdminTab('users')">Users</button>
+    </div>
+
+    <div id="adminTabReports">
+      <div class="panel" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="reportsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Content</th>
+                <th>Risk</th>
+                <th>Reporter</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="reportsBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:40px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="adminTabUsers" style="display:none">
+      <div class="panel" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="usersTable">
+            <thead>
+              <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:40px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ AUTH MODAL ══════════════ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🛡️ ShieldNet Account</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchTab('login')">Log In</button>
+        <button class="modal-tab" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Login Tab -->
+      <div class="tab-content active" id="tabLogin">
+        <div class="alert alert-error" id="loginError"></div>
+        <div class="alert alert-success" id="loginSuccess"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="your_username" onkeypress="if(event.key==='Enter')doLogin()">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" onkeypress="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="btn btn-accent" style="width:100%" onclick="doLogin()" id="loginBtn">Log In</button>
+        <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text3)">
+          Admin: username <strong style="color:var(--text2)">admin</strong> / password <strong style="color:var(--text2)">admin123</strong>
+        </div>
+      </div>
+
+      <!-- Register Tab -->
+      <div class="tab-content" id="tabRegister">
+        <div class="alert alert-error" id="regError"></div>
+        <div class="alert alert-success" id="regSuccess"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="regUsername" placeholder="choose_username">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password (min 6 chars)</label>
+          <input type="password" id="regPassword" placeholder="••••••••">
+        </div>
+        <button class="btn btn-accent" style="width:100%" onclick="doRegister()" id="regBtn">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>ShieldNet — AI Digital Safety Tool &nbsp;|&nbsp; Built with Flask &amp; SQLite &nbsp;|&nbsp; </span>
+  <a href="javascript:void(0)" onclick="showPage('learn')">Safety Tips</a>
+  <span> &nbsp;|&nbsp; For educational and protective use</span>
+</footer>
+
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
+<script>
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let currentUser = null;
+let currentReportType = 'url';
+let currentPage = 'home';
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  await checkSession();
+});
+
+async function checkSession() {
+  try {
+    const res = await fetch('/api/session');
+    const data = await res.json();
+    if (data.logged_in) {
+      currentUser = data;
+      updateNavAuth(data.username, data.role);
+    }
+  } catch {}
+}
+
+// ─── PAGE ROUTING ──────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.textContent.toLowerCase().replace(' ','').includes(name.replace('-','').substring(0,4))) {
+      l.classList.add('active');
+    }
+  });
+
+  currentPage = name;
+  window.scrollTo(0, 0);
+
+  if (name === 'admin') {
+    if (!currentUser || currentUser.role !== 'admin') {
+      showPage('home');
+      openModal('login');
+      return;
+    }
+    loadAdminData();
+  }
+}
+
+// ─── AUTH MODAL ────────────────────────────────────────────────────────────
+function openModal(tab) {
+  document.getElementById('authModal').classList.add('show');
+  switchTab(tab || 'login');
+}
+
+function closeModal() {
+  document.getElementById('authModal').classList.remove('show');
+}
+
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function switchTab(tab) {
+  document.querySelectorAll('.modal-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+}
+
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!username || !password) { showAlert('loginError', 'Please fill in all fields'); return; }
+  setLoading('loginBtn', 'loginBtnText', true, 'Log In');
+  try {
+    const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, password}) });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = {username: data.username, role: data.role};
+      updateNavAuth(data.username, data.role);
+      document.getElementById('loginSuccess').textContent = `Welcome back, ${data.username}!`;
+      document.getElementById('loginSuccess').classList.add('show');
+      setTimeout(closeModal, 1000);
+    } else {
+      showAlert('loginError', data.message);
+    }
+  } catch { showAlert('loginError', 'Connection error. Is the Flask server running?'); }
+  setLoading('loginBtn', 'loginBtnText', false, 'Log In');
+}
+
+async function doRegister() {
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  if (!username || !email || !password) { showAlert('regError', 'Please fill in all fields'); return; }
+  setLoading('regBtn', 'regBtnText', true, 'Create Account');
+  try {
+    const res = await fetch('/api/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({username, email, password}) });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('regSuccess').textContent = 'Account created! You can now log in.';
+      document.getElementById('regSuccess').classList.add('show');
+      setTimeout(() => switchTab('login'), 1500);
+    } else {
+      showAlert('regError', data.message);
+    }
+  } catch { showAlert('regError', 'Connection error'); }
+  setLoading('regBtn', 'regBtnText', false, 'Create Account');
+}
+
+async function logout() {
+  await fetch('/api/logout', {method: 'POST'});
+  currentUser = null;
+  document.getElementById('navAuth').style.display = 'flex';
+  document.getElementById('navUser').style.display = 'none';
+  document.getElementById('adminNavBtn').style.display = 'none';
+  showPage('home');
+}
+
+function updateNavAuth(username, role) {
+  document.getElementById('navAuth').style.display = 'none';
+  document.getElementById('navUser').style.display = 'flex';
+  document.getElementById('navUsername').textContent = username;
+  if (role === 'admin') document.getElementById('adminNavBtn').style.display = 'inline-block';
+}
+
+// ─── URL CHECKER ───────────────────────────────────────────────────────────
+async function checkURL() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { showAlert('urlAlert', 'Please enter a URL to check'); return; }
+
+  setLoading('urlBtn', 'urlBtnText', true, '⚡ Scan URL');
+  document.getElementById('urlResult').classList.remove('show');
+
+  try {
+    const res = await fetch('/api/check-url', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({url}) });
+    const data = await res.json();
+
+    if (!data.success) { showAlert('urlAlert', data.message); return; }
+
+    const box = document.getElementById('urlResult');
+    const header = document.getElementById('urlResultHeader');
+    const color = data.color;
+
+    header.className = 'result-header ' + color;
+    document.getElementById('urlVerdict').textContent = data.label;
+    document.getElementById('urlBadge').textContent = data.result;
+    document.getElementById('urlBadge').className = 'result-badge';
+
+    const score = data.risk_score;
+    document.getElementById('urlScore').textContent = score;
+    const fill = document.getElementById('urlRiskFill');
+    fill.style.width = score + '%';
+    fill.className = 'risk-fill ' + color;
+
+    let detailsHTML = `
+      <div class="detail-row"><span class="detail-key">URL</span><span class="detail-val" style="font-size:11px;word-break:break-all">${escHtml(url)}</span></div>
+      <div class="detail-row"><span class="detail-key">Protocol</span><span class="detail-val">${data.https ? '🔒 HTTPS' : '⚠️ HTTP (No Encryption)'}</span></div>
+      <div class="detail-row"><span class="detail-key">URL Length</span><span class="detail-val">${data.url_length} characters ${data.url_length > 100 ? '⚠️ Very Long' : '✓'}</span></div>
+      <div class="detail-row"><span class="detail-key">Risk Score</span><span class="detail-val">${score}/100</span></div>
+    `;
+
+    if (data.flags && data.flags.length > 0) {
+      detailsHTML += `<div class="detail-row" style="flex-direction:column;gap:8px"><span class="detail-key">Risk Indicators</span><div class="tag-list">`;
+      data.flags.forEach(f => { detailsHTML += `<span class="tag">⚠ ${escHtml(f)}</span>`; });
+      detailsHTML += `</div></div>`;
+    }
+
+    if (data.result === 'SAFE') {
+      detailsHTML += `<div style="margin-top:12px;padding:10px;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.2);border-radius:3px;font-size:12px;color:var(--green)">✅ No suspicious patterns detected. This URL appears safe.</div>`;
+    }
+
+    document.getElementById('urlDetails').innerHTML = detailsHTML;
+    box.classList.add('show');
+    hideAlert('urlAlert');
+  } catch (e) { showAlert('urlAlert', 'Error: Could not connect to server. Make sure Flask is running.'); }
+  setLoading('urlBtn', 'urlBtnText', false, '⚡ Scan URL');
+}
+
+// ─── MESSAGE CHECKER ───────────────────────────────────────────────────────
+async function checkMessage() {
+  const message = document.getElementById('messageInput').value.trim();
+  if (!message) { showAlert('msgAlert', 'Please paste a message to analyze'); return; }
+
+  setLoading('msgBtn', 'msgBtnText', true, '🔍 Analyze Message');
+  document.getElementById('msgResult').classList.remove('show');
+
+  try {
+    const res = await fetch('/api/check-message', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({message}) });
+    const data = await res.json();
+
+    if (!data.success) { showAlert('msgAlert', data.message); return; }
+
+    const color = data.color;
+    document.getElementById('msgResultHeader').className = 'result-header ' + color;
+    document.getElementById('msgVerdict').textContent = data.label;
+    document.getElementById('msgBadge').textContent = data.result;
+    document.getElementById('msgBadge').className = 'result-badge';
+
+    const score = data.risk_score;
+    document.getElementById('msgScore').textContent = score;
+    const fill = document.getElementById('msgRiskFill');
+    fill.style.width = score + '%';
+    fill.className = 'risk-fill ' + color;
+
+    let detailsHTML = `
+      <div class="detail-row"><span class="detail-key">Risk Score</span><span class="detail-val">${score}/100</span></div>
+      <div class="detail-row"><span class="detail-key">Indicators Found</span><span class="detail-val">${data.keywords_found.length}</span></div>
+    `;
+
+    if (data.urls_found && data.urls_found.length > 0) {
+      detailsHTML += `<div class="detail-row"><span class="detail-key">URLs in Message</span><span class="detail-val">${data.urls_found.length} link(s) detected ⚠️</span></div>`;
+    }
+
+    if (data.analysis && data.analysis.length > 0) {
+      detailsHTML += `<div style="margin-top:12px">`;
+      data.analysis.forEach(a => {
+        const isGood = a.startsWith('No known');
+        detailsHTML += `<div style="padding:8px 12px;margin-bottom:6px;background:${isGood ? 'rgba(0,255,136,0.05)' : 'rgba(255,51,85,0.05)'};border-left:3px solid ${isGood ? 'var(--green)' : 'var(--red)'};font-size:12px;color:${isGood ? 'var(--green)' : 'var(--text)'}">${escHtml(a)}</div>`;
+      });
+      detailsHTML += `</div>`;
+    }
+
+    if (data.keywords_found.length > 0) {
+      detailsHTML += `<div style="margin-top:12px"><div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em">Detected Keywords</div><div class="tag-list">`;
+      data.keywords_found.forEach(k => { detailsHTML += `<span class="tag">⚑ ${escHtml(k)}</span>`; });
+      detailsHTML += `</div></div>`;
+    }
+
+    document.getElementById('msgDetails').innerHTML = detailsHTML;
+    document.getElementById('msgResult').classList.add('show');
+    hideAlert('msgAlert');
+  } catch { showAlert('msgAlert', 'Error: Could not connect to server.'); }
+  setLoading('msgBtn', 'msgBtnText', false, '🔍 Analyze Message');
+}
+
+// ─── REPORT ────────────────────────────────────────────────────────────────
+function selectReportType(btn, type) {
+  document.querySelectorAll('.report-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentReportType = type;
+}
+
+async function submitReport() {
+  const content = document.getElementById('reportContent').value.trim();
+  const description = document.getElementById('reportDesc').value.trim();
+  const risk_level = document.getElementById('reportRisk').value;
+
+  if (!content) { showAlert('reportAlert', 'Please enter the suspicious content', 'error'); return; }
+
+  try {
+    const res = await fetch('/api/submit-report', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({report_type: currentReportType, content, description, risk_level}) });
+    const data = await res.json();
+    const type = data.success ? 'success' : 'error';
+    showAlert('reportAlert', data.message, type);
+    if (data.success) {
+      document.getElementById('reportContent').value = '';
+      document.getElementById('reportDesc').value = '';
+    }
+  } catch { showAlert('reportAlert', 'Error submitting report', 'error'); }
+}
+
+// ─── ADMIN ─────────────────────────────────────────────────────────────────
+async function loadAdminData() {
+  try {
+    const [statsRes, reportsRes, usersRes] = await Promise.all([
+      fetch('/api/admin/stats'),
+      fetch('/api/admin/reports'),
+      fetch('/api/admin/users')
+    ]);
+    const stats = await statsRes.json();
+    const reports = await reportsRes.json();
+    const users = await usersRes.json();
+
+    document.getElementById('statUsers').textContent = stats.total_users;
+    document.getElementById('statReports').textContent = stats.total_reports;
+    document.getElementById('statPending').textContent = stats.pending_reports;
+    document.getElementById('statURLs').textContent = stats.url_checks;
+    document.getElementById('statMsgs').textContent = stats.message_checks;
+    document.getElementById('statDanger').textContent = stats.dangerous_urls;
+
+    renderReports(reports);
+    renderUsers(users);
+  } catch (e) { console.error('Admin load error', e); }
+}
+
+function renderReports(reports) {
+  const tbody = document.getElementById('reportsBody');
+  if (!reports.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:40px">No reports yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = reports.map(r => `
+    <tr>
+      <td>${r.id}</td>
+      <td><span class="badge badge-pending" style="text-transform:uppercase">${escHtml(r.report_type)}</span></td>
+      <td><div class="truncate">${escHtml(r.content)}</div></td>
+      <td>${riskBadge(r.risk_level)}</td>
+      <td>${escHtml(r.username || 'Anonymous')}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="color:var(--text3);font-size:11px">${r.created_at ? r.created_at.substring(0,10) : '—'}</td>
+      <td>
+        <button class="btn-sm btn-outline" style="font-size:10px;padding:4px 8px" onclick="updateStatus(${r.id}, 'reviewed')">✓ Review</button>
+        <button class="btn-sm btn-outline" style="font-size:10px;padding:4px 8px;color:var(--red);border-color:rgba(255,51,85,0.3)" onclick="updateStatus(${r.id}, 'dismissed')">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('usersBody');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td style="color:#fff;font-weight:700">${escHtml(u.username)}</td>
+      <td style="color:var(--text2)">${escHtml(u.email)}</td>
+      <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
+      <td style="color:var(--text3);font-size:11px">${u.created_at ? u.created_at.substring(0,10) : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+async function updateStatus(id, status) {
+  await fetch(`/api/admin/report/${id}/status`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status}) });
+  loadAdminData();
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'reports' && i === 0) || (tab === 'users' && i === 1));
+  });
+  document.getElementById('adminTabReports').style.display = tab === 'reports' ? 'block' : 'none';
+  document.getElementById('adminTabUsers').style.display = tab === 'users' ? 'block' : 'none';
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'alert show';
+  if (type === 'success') el.classList.add('alert-success');
+  else if (type === 'info') el.classList.add('alert-info');
+  else el.classList.add('alert-error');
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('show');
+}
+
+function setLoading(btnId, textId, loading, defaultText) {
+  const btn = document.getElementById(btnId);
+  const txt = document.getElementById(textId);
+  if (!btn) return;
+  btn.disabled = loading;
+  if (txt) txt.innerHTML = loading ? '<span class="spinner"></span> Analyzing...' : defaultText;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function riskBadge(level) {
+  const map = {low: 'badge-warn', medium: 'badge-warn', high: 'badge-danger', critical: 'badge-danger', unknown: 'badge-pending'};
+  return `<span class="badge ${map[level] || 'badge-pending'}">${level || 'unknown'}</span>`;
+}
+
+function statusBadge(s) {
+  const map = {pending: 'badge-pending', reviewed: 'badge-reviewed', dismissed: 'badge-reviewed'};
+  const icons = {pending: '⏳', reviewed: '✓', dismissed: '✕'};
+  return `<span class="badge ${map[s] || 'badge-pending'}">${icons[s] || ''} ${s || 'pending'}</span>`;
+}
+</script>
+</body>
+</html>
