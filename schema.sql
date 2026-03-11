@@ -9,39 +9,35 @@ USE shieldai_db;
 
 -- ── TABLE: users ──────────────────────────────────────
 -- Stores user accounts and profile data
-CREATE TABLE IF NOT EXISTS users (
-    id                  INT AUTO_INCREMENT PRIMARY KEY,
-    name                VARCHAR(150) NOT NULL,
-    email               VARCHAR(200) NOT NULL UNIQUE,
-    password_hash       VARCHAR(64) NOT NULL,              -- SHA-256 hex
-    phone               VARCHAR(20),
-    age_group           ENUM('child','teen','adult','senior') DEFAULT 'adult',
+CREATE DATABASE IF NOT EXISTS shieldai_db;
+USE shieldai_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    email VARCHAR(200) UNIQUE NOT NULL,
+    password_hash VARCHAR(64) NOT NULL,
+    phone VARCHAR(20),
+    age_group ENUM('child','teen','adult','senior') DEFAULT 'adult',
     vulnerability_group ENUM('general','senior','rural','teenager','low_literacy') DEFAULT 'general',
-    xp_points           INT DEFAULT 0,
-    level               INT DEFAULT 1,
-    is_active           TINYINT(1) DEFAULT 1,
-    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
-    INDEX idx_vulnerability (vulnerability_group)
+    xp_points INT DEFAULT 0,
+    level INT DEFAULT 1,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- ── TABLE: threat_logs ────────────────────────────────
 -- Every detected threat event is recorded here
-CREATE TABLE IF NOT EXISTS threat_logs (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    user_id         INT NOT NULL,
-    threat_type     VARCHAR(100),          -- phishing, fraud, malware, misinformation
-    content_snippet TEXT,                  -- first 500 chars of analyzed content
-    risk_score      INT DEFAULT 0,         -- 0-100
-    risk_level      ENUM('SAFE','LOW','MEDIUM','HIGH') DEFAULT 'LOW',
-    action_taken    ENUM('blocked','warned','allowed','reported') DEFAULT 'warned',
-    source_ip       VARCHAR(45),
-    detected_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_user_threats (user_id),
-    INDEX idx_risk_level (risk_level),
-    INDEX idx_detected_at (detected_at)
+CREATE TABLE threat_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    threat_type VARCHAR(100),
+    content_snippet TEXT,
+    risk_score INT,
+    risk_level ENUM('SAFE','LOW','MEDIUM','HIGH'),
+    action_taken ENUM('blocked','warned','allowed','reported'),
+    detected_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ── TABLE: url_checks ─────────────────────────────────
