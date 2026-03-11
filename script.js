@@ -43,7 +43,6 @@ document.getElementById("loginResult").innerText="Login Failed"
 
 }
 
-
 function scan(){
 
 fetch(API+"/scan",{
@@ -60,3 +59,4 @@ document.getElementById("result").innerText=
 })
 
 }
+
